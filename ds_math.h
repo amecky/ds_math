@@ -3,37 +3,150 @@
 
 namespace ds {
 
-	typedef struct vec2 {
+	struct vec2 {
 		union {
 			struct {
 				float x, y;
 			};
 			float data[2];
 		};
+
+		vec2() : x(0.0f), y(0.0f) {}
+		explicit vec2(float v) : x(v), y(v) {}
+		vec2(float xx, float yy) : x(xx), y(yy) {}
+		vec2(int v) {
+			x = static_cast<float>(v);
+			y = static_cast<float>(v);
+		}
+		vec2(int xx,int yy) {
+			x = static_cast<float>(xx);
+			y = static_cast<float>(yy);
+		}
+		vec2(const vec2& other) {
+			x = other.x;
+			y = other.y;
+		}
+
+		const float* operator() () const {
+			return &data[0];
+		}
 	};
 
-	typedef struct vec3 {
+	struct vec3 {
 		union {
 			struct {
 				float x, y, z;
 			};
 			float data[3];
 		};
+		vec3() : x(0.0f), y(0.0f) , z(0.0f) {}
+		explicit vec3(float v) : x(v), y(v) , z(v) {}
+		vec3(float xx, float yy) : x(xx), y(yy) , z(0.0f) {}
+		vec3(const vec2& v) : x(v.x), y(v.y), z(0.0f) {}
+		vec3(float xx, float yy, float zz) : x(xx), y(yy), z(zz) {}
+		vec3(int v) {
+			x = static_cast<float>(v);
+			y = static_cast<float>(v);
+			z = static_cast<float>(v);
+		}
+		vec3(int xx, int yy) {
+			x = static_cast<float>(xx);
+			y = static_cast<float>(yy);
+			z = 0.0f;
+		}
+		vec3(int xx, int yy, int zz) {
+			x = static_cast<float>(xx);
+			y = static_cast<float>(yy);
+			z = static_cast<float>(zz);
+		}
+		vec3(const vec3& other) {
+			x = other.x;
+			y = other.y;
+			z = other.z;
+		}
+
+		const float* operator() () const {
+			return &data[0];
+		}
 	};
 
-	typedef struct vec4 {
+	struct vec4 {
 		union {
 			struct {
 				float x, y, z, w;
 			};
+			float data[4];
+		};
+		vec4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+		explicit vec4(float v) : x(v), y(v), z(v), w(v) {}
+		vec4(float xx, float yy) : x(xx), y(yy), z(0.0f) , w(0.0f) {}
+		vec4(const vec2& v) : x(v.x), y(v.y), z(0.0f) , w(0.0f) {}
+		vec4(const vec3& v) : x(v.x), y(v.y), z(v.z), w(0.0f) {}
+		vec4(float xx, float yy, float zz) : x(xx), y(yy), z(zz), w(0.0f) {}
+		vec4(float xx, float yy, float zz, float ww) : x(xx), y(yy), z(zz) , w(ww) {}
+		vec4(int v) {
+			x = static_cast<float>(v);
+			y = static_cast<float>(v);
+			z = static_cast<float>(v);
+			w = static_cast<float>(v);
+		}
+		vec4(int xx, int yy) {
+			x = static_cast<float>(xx);
+			y = static_cast<float>(yy);
+			z = 0.0f;
+			w = 0.0f;
+		}
+		vec4(int xx, int yy, int zz) {
+			x = static_cast<float>(xx);
+			y = static_cast<float>(yy);
+			z = static_cast<float>(zz);
+			w = 0.0f;
+		}
+		vec4(int xx, int yy, int zz, int ww) {
+			x = static_cast<float>(xx);
+			y = static_cast<float>(yy);
+			z = static_cast<float>(zz);
+			w = static_cast<float>(ww);
+		}
+		vec4(const vec4& other) {
+			x = other.x;
+			y = other.y;
+			z = other.z;
+			w = other.w;
+		}
+
+		const float* operator() () const {
+			return &data[0];
+		}
+	};
+
+	struct Color {
+		union {
 			struct {
 				float r, g, b, a;
 			};
 			float data[4];
 		};
+
+		Color() : r(1.0f), g(1.0f), b(1.0f), a(1.0f) {}
+		Color(float ir, float ig, float ib, float ia) : r(ir), g(ig) , b(ib), a(ia) {}
+		Color(int ir, int ig, int ib, int ia) {
+			r = static_cast<float>(ir) / 255.0f;
+			g = static_cast<float>(ig) / 255.0f;
+			b = static_cast<float>(ib) / 255.0f;
+			a = static_cast<float>(ia) / 255.0f;
+		}
+
+		operator float* () {
+			return &data[0];
+		}
+
+		operator const float* () const {
+			return &data[0];
+		}
 	};
 
-	typedef struct matrix {
+	struct matrix {
 
 		union {
 			struct {
@@ -46,6 +159,9 @@ namespace ds {
 			float m[4][4];
 		};
 		
+		float& operator () (int a, int b) {
+			return m[a][b];
+		}
 	};
 
 	inline bool operator == (const vec2& u, const vec2& v) {
@@ -117,6 +233,21 @@ namespace ds {
 		return u;
 	}
 
+	inline vec2 operator + (const vec2& u, const vec2& v) {
+		vec2 ret = u;
+		return ret += v;
+	}
+
+	inline vec3 operator + (const vec3& u, const vec3& v) {
+		vec3 ret = u;
+		return ret += v;
+	}
+
+	inline vec4 operator + (const vec4& u, const vec4& v) {
+		vec4 ret = u;
+		return ret += v;
+	}
+
 	inline vec2& operator /= (vec2& u, float other) {
 		u.x /= other;
 		u.y /= other;
@@ -136,6 +267,84 @@ namespace ds {
 		u.z /= other;
 		u.w /= other;
 		return u;
+	}
+
+	inline vec2 operator *= (vec2& u, float other) {
+		u.x *= other;
+		u.y *= other;
+		return u;
+	}
+
+	inline vec3 operator *= (vec3& u, float other) {
+		u.x *= other;
+		u.y *= other;
+		u.z *= other;
+		return u;
+	}
+
+	inline vec4 operator *= (vec4& u, float other) {
+		u.x *= other;
+		u.y *= other;
+		u.z *= other;
+		u.w *= other;
+		return u;
+	}
+
+	inline vec2& operator -= (vec2& u, const vec2& v) {
+		u.x -= v.x;
+		u.y -= v.y;
+		return u;
+	}
+
+	inline vec3& operator -= (vec3& u, const vec3& v) {
+		u.x -= v.x;
+		u.y -= v.y;
+		u.z -= v.z;
+		return u;
+	}
+
+	inline vec4& operator -= (vec4& u, const vec4& v) {
+		u.x -= v.x;
+		u.y -= v.y;
+		u.z -= v.z;
+		u.w -= v.w;
+		return u;
+	}
+
+	inline vec2 operator -= (const vec2& u, const vec2& v) {
+		return{ u.x - v.x,u.y - v.y };
+	}
+
+	inline vec3 operator -= (const vec3& u, const vec3& v) {
+		return{ u.x - v.x,u.y - v.y, u.z - v.z };
+	}
+
+	inline vec4 operator -= (const vec4& u, const vec4& v) {
+		return{ u.x - v.x,u.y - v.y, u.z - v.z, u.w - v.w };
+	}
+
+	inline vec2 operator * (const vec2& u, float v) {
+		return{ u.x * v, u.y * v };
+	}
+
+	inline vec3 operator * (const vec3& u, float v) {
+		return{ u.x * v, u.y * v, u.z * v };
+	}
+
+	inline vec4 operator * (const vec4& u, float v) {
+		return{ u.x * v, u.y * v, u.z * v, u.w * v };
+	}
+
+	inline vec2 operator * (float v, const vec2& u) {
+		return{ u.x * v, u.y * v };
+	}
+
+	inline vec3 operator * (float v, const vec3& u) {
+		return{ u.x * v, u.y * v, u.z * v };
+	}
+
+	inline vec4 operator * (float v, const vec4& u) {
+		return{ u.x * v, u.y * v, u.z * v, u.w * v };
 	}
 
 	inline vec2 operator / (const vec2& u, const float& v) {
@@ -170,15 +379,15 @@ namespace ds {
 	}
 
 	inline float length(const vec2& v) {
-		return sqrt(v.x * v.x + v.y * v.y);
+		return static_cast<float>(sqrt(v.x * v.x + v.y * v.y));
 	}
 
 	inline float length(const vec3& v) {
-		return sqrt(dot(v, v));
+		return static_cast<float>(sqrt(dot(v, v)));
 	}
 
 	inline float length(const vec4& v) {
-		return sqrt(dot(v, v));
+		return static_cast<float>(sqrt(dot(v, v)));
 	}
 
 	inline float sqr_length(const vec2& v) {
@@ -379,11 +588,7 @@ namespace ds {
 		return r;
 	}
 
-	template<int Size, class T>
-	Vector<Size, T> operator + (const Vector<Size, T>& u, const Vector<Size, T>& v) {
-		Vector<Size, T> ret = u;
-		return ret += v;
-	}
+	
 
 	template<int Size, class T>
 	Vector<Size, T> operator - (const Vector<Size, T>& u, const Vector<Size, T>& v) {
@@ -581,11 +786,11 @@ namespace ds {
 	//
 	// ******************************************************
 	inline matrix matIdentity() {
-		return{
-			{1.0f, 0.0f, 0.0f, 0.0f},
-			{0.0f, 1.0f, 0.0f, 0.0f},
-			{0.0f, 0.0f, 1.0f, 0.0f},
-			{0.0f, 0.0f, 0.0f, 1.0f}
+		return {
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f,
 		};
 	}
 
@@ -628,45 +833,47 @@ namespace ds {
 	// Scale matrix
 	// -------------------------------------------------------
 	inline matrix matScale(const vec3& scale) {
-		matrix sm(
+		return {
 			scale.x, 0.0f, 0.0f, 0.0f,
 			0.0f, scale.y, 0.0f, 0.0f,
 			0.0f, 0.0f, scale.z, 0.0f,
 			0.0f, 0.0f, 0.0f, 1.0f
-		);
-		return sm;
+		};
 	}
 
 	// http://www.cprogramming.com/tutorial/3d/rotationMatrices.html
 	// left hand sided
 	inline matrix matRotationX(float angle) {
-		matrix sm(
+		float c = static_cast<float>(cos(angle));
+		float s = static_cast<float>(sin(angle));
+		return {
 			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, cos(angle), -sin(angle), 0.0f,
-			0.0f, sin(angle), cos(angle), 0.0f,
+			0.0f,    c,   -s, 0.0f,
+			0.0f,    s,    c, 0.0f,
 			0.0f, 0.0f, 0.0f, 1.0f
-		);
-		return sm;
+		};
 	}
 
 	inline matrix matRotationY(float angle) {
-		matrix sm(
-			cos(angle), 0.0f, sin(angle), 0.0f,
+		float c = static_cast<float>(cos(angle));
+		float s = static_cast<float>(sin(angle));
+		return {
+			   c, 0.0f,    s, 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f,
-			-sin(angle), 0.0f, cos(angle), 0.0f,
+			  -s, 0.0f,    c, 0.0f,
 			0.0f, 0.0f, 0.0f, 1.0f
-		);
-		return sm;
+		};
 	}
 	// FIXME: wrong direction!!!!
 	inline matrix matRotationZ(float angle) {
-		matrix sm(
-			cos(angle), -sin(angle), 0.0f, 0.0f,
-			sin(angle), cos(angle), 0.0f, 0.0f,
+		float c = static_cast<float>(cos(angle));
+		float s = static_cast<float>(sin(angle));
+		return{
+			   c,   -s, 0.0f, 0.0f,
+			   s,    c, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 1.0f
-		);
-		return sm;
+		};
 	}
 
 	inline matrix matRotation(const vec3& r) {
@@ -691,13 +898,12 @@ namespace ds {
 	// Translation matrix
 	// -------------------------------------------------------
 	inline matrix matTranslate(const vec3& pos) {
-		matrix tm(
+		return{
 			1.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f,
 			pos.x, pos.y, pos.z, 1.0f
-		);
-		return tm;
+		};
 	}
 
 	inline matrix matLookAtLH(const vec3& eye, const vec3& lookAt, const vec3& up) {
@@ -708,35 +914,32 @@ namespace ds {
 		float dox = -dot(xAxis, eye);
 		float doy = -dot(yAxis, eye);
 		float doz = -dot(zAxis, eye);
-		matrix tmp(
+		return{
 			xAxis.x, yAxis.x, zAxis.x, 0.0f,
 			xAxis.y, yAxis.y, zAxis.y, 0.0f,
 			xAxis.z, yAxis.z, zAxis.z, 0.0f,
 			dox, doy, doz, 1.0f
-		);
-		return tmp;
+		};
 	}
 
 	inline matrix matPerspectiveFovLH(float fovy, float aspect, float zn, float zf) {
 		// msdn.microsoft.com/de-de/library/windows/desktop/bb205350(v=vs.85).aspx
-		float yScale = 1.0f / tan(fovy / 2.0f);
+		float yScale = 1.0f / static_cast<float>(tan(fovy / 2.0f));
 		float xScale = yScale / aspect;
-
-		matrix tmp(
+		return{
 			xScale, 0.0f, 0.0f, 0.0f,
 			0.0f, yScale, 0.0f, 0.0f,
 			0.0f, 0.0f, zf / (zf - zn), 1.0f,
 			0.0f, 0.0f, -zn*zf / (zf - zn), 0.0f
-		);
-		return tmp;
+		};
 	}
 
 	inline vec3 matTransformNormal(const vec3& v, const matrix& m) {
-		vec3 result =
-			vec3(v.x * m._11 + v.y * m._21 + v.z * m._31,
-				v.x * m._12 + v.y * m._22 + v.z * m._32,
-				v.x * m._13 + v.y * m._23 + v.z * m._33);
-		return result;
+		return {
+			v.x * m._11 + v.y * m._21 + v.z * m._31,
+			v.x * m._12 + v.y * m._22 + v.z * m._32,
+			v.x * m._13 + v.y * m._23 + v.z * m._33 
+		};
 	}
 
 	inline matrix matRotation(const vec3& v, float angle) {
@@ -744,25 +947,29 @@ namespace ds {
 		float u2 = v.x * v.x;
 		float vec2 = v.y * v.y;
 		float w2 = v.z * v.z;
+		float s = static_cast<float>(sin(angle));
+		float c = static_cast<float>(cos(angle));
+		float LS = static_cast<float>(sqrt(L));
+
 		matrix tmp = matIdentity();
-		tmp._11 = (u2 + (vec2 + w2) * cos(angle)) / L;
-		tmp._12 = (v.x * v.y * (1 - cos(angle)) - v.z * sqrt(L) * sin(angle)) / L;
-		tmp._13 = (v.x * v.z * (1 - cos(angle)) + v.y * sqrt(L) * sin(angle)) / L;
+		tmp._11 = (u2 + (vec2 + w2) * c) / L;
+		tmp._12 = (v.x * v.y * (1 - c) - v.z * LS * s) / L;
+		tmp._13 = (v.x * v.z * (1 - c) + v.y * LS * s) / L;
 		tmp._14 = 0.0f;
 
-		tmp._21 = (v.x * v.y * (1 - cos(angle)) + v.z * sqrt(L) * sin(angle)) / L;
-		tmp._22 = (vec2 + (u2 + w2) * cos(angle)) / L;
-		tmp._23 = (v.y * v.z * (1 - cos(angle)) - v.x * sqrt(L) * sin(angle)) / L;
+		tmp._21 = (v.x * v.y * (1 - c) + v.z * LS * s) / L;
+		tmp._22 = (vec2 + (u2 + w2) * c) / L;
+		tmp._23 = (v.y * v.z * (1 - c) - v.x * LS * s) / L;
 		tmp._24 = 0.0f;
 
-		tmp._31 = (v.x * v.z * (1 - cos(angle)) - v.y * sqrt(L) * sin(angle)) / L;
-		tmp._32 = (v.y * v.z * (1 - cos(angle)) + v.x * sqrt(L) * sin(angle)) / L;
-		tmp._33 = (w2 + (u2 + vec2) * cos(angle)) / L;
+		tmp._31 = (v.x * v.z * (1 - c) - v.y * LS * s) / L;
+		tmp._32 = (v.y * v.z * (1 - c) + v.x * LS * s) / L;
+		tmp._33 = (w2 + (u2 + vec2) * c) / L;
 		tmp._34 = 0.0f;
 
 		return tmp;
 	}
-
+	/*
 	inline matrix matInverse(const matrix& m) {
 		matrix ret;
 		float tmp[12]; 
@@ -857,7 +1064,7 @@ namespace ds {
 		}
 		return ret;
 	}
-
+	*/
 	inline vec4 operator * (const matrix& m, const vec4& v) {
 		// column mode
 		//Vector4f tmp;
@@ -876,9 +1083,9 @@ namespace ds {
 	}
 
 	inline vec3 operator * (const matrix& m, const vec3& v) {
-		vec4 nv(v.x, v.y, v.z, 1.0f);
+		vec4 nv = { v.x, v.y, v.z, 1.0f };
 		vec4 tmp = m * nv;
-		return vec3(tmp.x, tmp.y, tmp.z);
+		return { tmp.x, tmp.y, tmp.z };
 	}
 
 }
