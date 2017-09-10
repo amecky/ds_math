@@ -3,6 +3,9 @@
 
 namespace ds {
 
+	// ----------------------------------------------------
+	// vec2
+	// ----------------------------------------------------
 	struct vec2 {
 		union {
 			struct {
@@ -32,6 +35,9 @@ namespace ds {
 		}
 	};
 
+	// ----------------------------------------------------
+	// vec3
+	// ----------------------------------------------------
 	struct vec3 {
 		union {
 			struct {
@@ -70,6 +76,9 @@ namespace ds {
 		}
 	};
 
+	// ----------------------------------------------------
+	// vec4
+	// ----------------------------------------------------
 	struct vec4 {
 		union {
 			struct {
@@ -120,6 +129,9 @@ namespace ds {
 		}
 	};
 
+	// ----------------------------------------------------
+	// color
+	// ----------------------------------------------------
 	struct Color {
 		union {
 			struct {
@@ -146,6 +158,70 @@ namespace ds {
 		}
 	};
 
+	// ----------------------------------------------------
+	// HSL
+	// ----------------------------------------------------
+	struct HSL {
+
+		union {
+			float values[3];
+			struct {
+				float h;
+				float s;
+				float l;
+			};
+		};
+
+		HSL() : h(0.0f), s(0.0f), l(0.0f) {}
+		HSL(float hue, float saturation, float luminance) : h(hue), s(saturation), l(luminance) {}
+
+		static float getColorComponent(float temp1, float temp2, float temp3) {
+			if (temp3 < 0.0f)
+				temp3 += 1.0f;
+			else if (temp3 > 1.0f)
+				temp3 -= 1.0f;
+
+			if (temp3 < 1.0f / 6.0f)
+				return temp1 + (temp2 - temp1) * 6.0f * temp3;
+			else if (temp3 < 0.5f)
+				return temp2;
+			else if (temp3 < 2.0f / 3.0f)
+				return temp1 + ((temp2 - temp1) * ((2.0f / 3.0f) - temp3) * 6.0f);
+			else
+				return temp1;
+		}
+
+		Color convert(const HSL& hsl) {
+			float r = 0.0f, g = 0.0f, b = 0.0f;
+			float l = hsl.l / 100.0f;
+			float s = hsl.s / 100.0f;
+			float h = hsl.h / 360.0f;
+			if (l != 0.0f) {
+				if (s == 0.0f) {
+					return ds::Color(255, 255, 255, 255);
+				}
+				else {
+					float temp2;
+					if (l < 0.5)
+						temp2 = l * (1.0f + s);
+					else
+						temp2 = l + s - (l * s);
+
+					float temp1 = 2.0f * l - temp2;
+
+					r = getColorComponent(temp1, temp2, h + 1.0f / 3.0f);
+					g = getColorComponent(temp1, temp2, h);
+					b = getColorComponent(temp1, temp2, h - 1.0f / 3.0f);
+				}
+			}
+			return{ r, g, b, 1.0f };
+		}
+
+	};
+
+	// ----------------------------------------------------
+	// matrix
+	// ----------------------------------------------------
 	struct matrix {
 
 		union {
@@ -162,6 +238,28 @@ namespace ds {
 		float& operator () (int a, int b) {
 			return m[a][b];
 		}
+	};
+
+	// ----------------------------------------------------
+	// p2i
+	// ----------------------------------------------------
+	struct p2i {
+
+		union {
+			struct {
+				int x, y;
+			};
+			int data[2];
+		};
+
+		p2i() : x(0), y(0) {}
+		explicit p2i(int v) : x(v), y(v) {}
+		p2i(int xx, int yy) : x(xx), y(yy) {}		
+		p2i(const p2i& other) {
+			x = other.x;
+			y = other.y;
+		}
+
 	};
 
 	inline bool operator == (const vec2& u, const vec2& v) {
@@ -463,103 +561,73 @@ namespace ds {
 			u.x * v.y - u.y * v.x
 		};
 	}
-	/*
-	template<class T>
-	Vector<3, T>* cross(const Vector<3, T>& u, const Vector<3, T>& v, Vector<3, T>* ret) {
-		ret->x = u.y * v.z - u.z * v.y;
-		ret->y = u.z * v.x - u.x * v.z;
-		ret->z = u.x * v.y - u.y * v.x;
-		return ret;
-	}
-	*/
-	/*
-	template<class T>
-	T inline cross(const Vector<2, T>& v1, const Vector<2, T>& vec2) {
-		return v1.x * vec2.y - vec2.x * v1.y;
-	}
-	*/
-	/*
-	
-	const vec2 vec2_RIGHT = vec2(1, 0);
-	const vec2 vec2_LEFT = vec2(-1, 0);
-	const vec2 vec2_UP = vec2(0, 1);
-	const vec2 vec2_DOWN = vec2(0, -1);
-	const vec2 vec2_ZERO = vec2(0, 0);
-	const vec2 vec2_ONE = vec2(1, 1);
 
-	const vec3 vec3_RIGHT = vec3(1, 0, 0);
-	const vec3 vec3_LEFT = vec3(-1, 0, 0);
-	const vec3 vec3_UP = vec3(0, 1, 0);
-	const vec3 vec3_DOWN = vec3(0, -1, 0);
-	const vec3 vec3_FORWARD = vec3(0, 0, -1);
-	const vec3 vec3_BACKWARD = vec3(0, 0, 1);
-	const vec3 vec3_ZERO = vec3(0, 0, 0);
-	const vec3 vec3_ONE = vec3(1, 1, 1);
-
-	// ------------------------------------------------
-	// Matrix
-	// ------------------------------------------------
-	struct matrix {
-
-		union {
-			struct {
-				float        _11, _12, _13, _14;
-				float        _21, _22, _23, _24;
-				float        _31, _32, _33, _34;
-				float        _41, _42, _43, _44;
-
-			};
-			float m[4][4];
+	inline vec2 lerp(const vec2& u, const vec2& v, float time) {
+		float norm = time;
+		norm = (norm > 1.0f ? 1.0f : norm);
+		norm = (norm < 0.0f ? 0.0f : norm);
+		return{
+			u.x * (1.0f - norm) + v.x * norm,
+			u.y * (1.0f - norm) + v.y * norm
 		};
+	}
 
-		matrix();
-		matrix(float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24, float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44);
-		matrix(const float* other) {
-			for (int y = 0; y < 4; ++y) {
-				for (int x = 0; x < 4; ++x) {
-					m[x][y] = other[x + y * 4];
-				}
+	inline vec3 lerp(const vec3& u, const vec3& v, float time) {
+		float norm = time;
+		norm = (norm > 1.0f ? 1.0f : norm);
+		norm = (norm < 0.0f ? 0.0f : norm);
+		return{
+			u.x * (1.0f - norm) + v.x * norm,
+			u.y * (1.0f - norm) + v.y * norm,
+			u.z * (1.0f - norm) + v.z * norm
+		};
+	}
+
+	inline vec4 lerp(const vec4& u, const vec4& v, float time) {
+		float norm = time;
+		norm = (norm > 1.0f ? 1.0f : norm);
+		norm = (norm < 0.0f ? 0.0f : norm);
+		return{
+			u.x * (1.0f - norm) + v.x * norm,
+			u.y * (1.0f - norm) + v.y * norm,
+			u.z * (1.0f - norm) + v.z * norm,
+			u.w * (1.0f - norm) + v.w * norm
+		};
+	}
+
+	inline vec2 vec_min(const vec2& u, const vec2& v) {
+		return{
+			u.x < v.x ? u.x : v.x,
+			u.y < v.y ? u.y : v.y 
+		};
+	}
+
+	inline vec2 vec_max(const vec2& u, const vec2& v) {
+		return{
+			u.x > v.x ? u.x : v.x,
+			u.y > v.y ? u.y : v.y
+		};
+	}
+
+	inline vec2 clamp(const vec2& u, const vec2& min, const vec2& max) {
+		vec2 ret;
+		for (int i = 0; i < 2; ++i) {
+			ret.data[i] = u.data[i];
+			if (u.data[i] > max.data[i]) {
+				ret.data[i] = max.data[i];
+			}
+			else if (u.data[i] < min.data[i]) {
+				ret.data[i] = min.data[i];
 			}
 		}
-		operator float *() const { return (float *)&_11; }
+		return ret;
+	}
 
-		float& operator () (int a, int b) {
-			return m[a][b];
-		}
-	};
-	matrix matIdentity();
+	inline vec2 saturate(const vec2& u) {
+		return clamp(u, vec2(0.0f), vec2(1.0f));
+	}
 
-	matrix matOrthoLH(float w, float h, float zn, float zf);
-
-	matrix matScale(const vec3& scale);
-
-	matrix matRotationX(float angle);
-
-	matrix matRotationY(float angle);
-
-	matrix matRotationZ(float angle);
-
-	matrix matRotation(const vec3& r);
-
-	matrix matTranspose(const matrix& m);
-
-	matrix matTranslate(const vec3& pos);
-
-	matrix matLookAtLH(const vec3& eye, const vec3& lookAt, const vec3& up);
-
-	matrix matPerspectiveFovLH(float fovy, float aspect, float zn, float zf);
-
-	vec3 matTransformNormal(const vec3& v, const matrix& m);
-
-	matrix matRotation(const vec3& v, float angle);
-
-	matrix matInverse(const matrix& m);
-
-	matrix operator * (const matrix& m1, const matrix& m2);
-
-	vec3 operator * (const matrix& m, const vec3& v);
-
-	vec4 operator * (const matrix& m, const vec4& v);
+	/*
 	
 	template<int Size, class T>
 	Vector<Size, T> operator *= (Vector<Size, T>& u, T other) {
@@ -609,97 +677,6 @@ namespace ds {
 	}
 
 	
-
-	
-
-	
-
-	template<int Size>
-	Vector<Size, float>* lerp(const Vector<Size, float>& u, const Vector<Size, float>& v, float time, Vector<Size, float>* ret) {
-		float norm = time;
-		if (norm < 0.0f) {
-			norm = 0.0f;
-		}
-		if (norm > 1.0f) {
-			norm = 1.0f;
-		}
-		for (int i = 0; i < Size; ++i) {
-			ret->data[i] = u.data[i] * (1.0f - norm) + v.data[i] * norm;
-		}
-		return ret;
-	}
-
-	template<int Size>
-	Vector<Size, float> lerp(const Vector<Size, float>& u, const Vector<Size, float>& v, float time) {
-		Vector<Size, float> ret;
-		lerp(u, v, time, &ret);
-		return ret;
-	}
-
-	template<int Size, class T>
-	Vector<Size, T> vec_min(const Vector<Size, T>& u, const Vector<Size, T>& v) {
-		Vector<Size, T> ret;
-		for (int i = 0; i < Size; ++i) {
-			if (u.data[i] <= v.data[i]) {
-				ret.data[i] = u.data[i];
-			}
-			else {
-				ret.data[i] = v.data[i];
-			}
-		}
-		return ret;
-	}
-
-	template<int Size, class T>
-	Vector<Size, T> vec_max(const Vector<Size, T>& u, const Vector<Size, T>& v) {
-		Vector<Size, T> ret;
-		for (int i = 0; i < Size; ++i) {
-			if (u.data[i] >= v.data[i]) {
-				ret.data[i] = u.data[i];
-			}
-			else {
-				ret.data[i] = v.data[i];
-			}
-		}
-		return ret;
-	}
-
-	template<int Size, class T>
-	Vector<Size, T> clamp(const Vector<Size, T>& u, const Vector<Size, T>& min, const Vector<Size, T>& max) {
-		Vector<Size, T> ret;
-		for (int i = 0; i < Size; ++i) {
-			ret.data[i] = u.data[i];
-			if (u.data[i] > max.data[i]) {
-				ret.data[i] = max.data[i];
-			}
-			else if (u.data[i] < min.data[i]) {
-				ret.data[i] = min.data[i];
-			}
-		}
-		return ret;
-	}
-
-	template<int Size, class T>
-	void clamp(Vector<Size, T>* u, const Vector<Size, T>& min, const Vector<Size, T>& max) {
-		for (int i = 0; i < Size; ++i) {
-			if (u->data[i] > max.data[i]) {
-				u->data[i] = max.data[i];
-			}
-			else if (u->data[i] < min.data[i]) {
-				u->data[i] = min.data[i];
-			}
-		}
-	}
-
-	template<int Size>
-	Vector<Size, float> saturate(const Vector<Size, float>& u) {
-		return clamp(u, Vector<Size, float>(0.0f), Vector<Size, float>(1.0f));
-	}
-
-	template<int Size>
-	Vector<Size, int> saturate(const Vector<Size, int>& u) {
-		return clamp(u, Vector<Size, int>(0), Vector<Size, int>(1));
-	}
 
 	template<int Size, class T>
 	void limit(Vector<Size, T>* v, const Vector<Size, T>& u) {
