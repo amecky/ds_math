@@ -602,10 +602,44 @@ namespace ds {
 		};
 	}
 
+	inline vec3 vec_min(const vec3& u, const vec3& v) {
+		return{
+			u.x < v.x ? u.x : v.x,
+			u.y < v.y ? u.y : v.y,
+			u.z < v.z ? u.z : v.z
+		};
+	}
+
+	inline vec4 vec_min(const vec4& u, const vec4& v) {
+		return{
+			u.x < v.x ? u.x : v.x,
+			u.y < v.y ? u.y : v.y,
+			u.z < v.z ? u.z : v.z,
+			u.w < v.w ? u.w : v.w
+		};
+	}
+
 	inline vec2 vec_max(const vec2& u, const vec2& v) {
 		return{
 			u.x > v.x ? u.x : v.x,
 			u.y > v.y ? u.y : v.y
+		};
+	}
+
+	inline vec3 vec_max(const vec3& u, const vec3& v) {
+		return{
+			u.x > v.x ? u.x : v.x,
+			u.y > v.y ? u.y : v.y,
+			u.z > v.z ? u.z : v.z
+		};
+	}
+
+	inline vec4 vec_max(const vec4& u, const vec4& v) {
+		return{
+			u.x > v.x ? u.x : v.x,
+			u.y > v.y ? u.y : v.y,
+			u.z > v.z ? u.z : v.z,
+			u.w > v.w ? u.w : v.w
 		};
 	}
 
@@ -623,60 +657,63 @@ namespace ds {
 		return ret;
 	}
 
+	inline vec3 clamp(const vec3& u, const vec3& min, const vec3& max) {
+		vec3 ret;
+		for (int i = 0; i < 3; ++i) {
+			ret.data[i] = u.data[i];
+			if (u.data[i] > max.data[i]) {
+				ret.data[i] = max.data[i];
+			}
+			else if (u.data[i] < min.data[i]) {
+				ret.data[i] = min.data[i];
+			}
+		}
+		return ret;
+	}
+
+	inline vec4 clamp(const vec4& u, const vec4& min, const vec4& max) {
+		vec4 ret;
+		for (int i = 0; i < 4; ++i) {
+			ret.data[i] = u.data[i];
+			if (u.data[i] > max.data[i]) {
+				ret.data[i] = max.data[i];
+			}
+			else if (u.data[i] < min.data[i]) {
+				ret.data[i] = min.data[i];
+			}
+		}
+		return ret;
+	}
+
 	inline vec2 saturate(const vec2& u) {
 		return clamp(u, vec2(0.0f), vec2(1.0f));
+	}
+
+	inline vec3 saturate(const vec3& u) {
+		return clamp(u, vec3(0.0f), vec3(1.0f));
+	}
+
+	inline vec4 saturate(const vec4& u) {
+		return clamp(u, vec4(0.0f), vec4(1.0f));
+	}
+
+	inline vec3 reflect(const vec3& u, const vec3& norm) {
+		vec3 ret;
+		vec3 n = normalize(norm);
+		float dp = dot(u, n);
+		for (int i = 0; i < 3; ++i) {
+			ret.data[i] = 2.0f * dp * n.data[i] - u.data[i];
+		}
+		return ret;
 	}
 
 	/*
 	
 	template<int Size, class T>
-	Vector<Size, T> operator *= (Vector<Size, T>& u, T other) {
-		for (int i = 0; i < Size; ++i) {
-			u.data[i] *= other;
-		}
-		return u;
-	}
-
-	
-
-	template<int Size, class T>
-	Vector<Size, T>& operator -= (Vector<Size, T>& u, const Vector<Size, T>& v) {
-		for (int i = 0; i < Size; ++i) {
-			u.data[i] -= v.data[i];
-		}
-		return u;
-	}
-
-	template<int Size, class T>
-	Vector<Size, T> operator -= (const Vector<Size, T>& u, const Vector<Size, T>& v) {
-		Vector<Size, T> r;
-		for (int i = 0; i < Size; ++i) {
-			r.data[i] = u.data[i] - v.data[i];
-		}
-		return r;
-	}
-
-	
-
-	template<int Size, class T>
 	Vector<Size, T> operator - (const Vector<Size, T>& u, const Vector<Size, T>& v) {
 		Vector<Size, T> ret = u;
 		return ret -= v;
 	}
-
-	template<int Size, class T>
-	Vector<Size, T> operator * (const Vector<Size, T>& u, const T& v) {
-		Vector<Size, T> ret = u;
-		return ret *= v;
-	}
-
-	template<int Size, class T>
-	Vector<Size, T> operator * (const T& v, const Vector<Size, T>& u) {
-		Vector<Size, T> ret = u;
-		return ret *= v;
-	}
-
-	
 
 	template<int Size, class T>
 	void limit(Vector<Size, T>* v, const Vector<Size, T>& u) {
